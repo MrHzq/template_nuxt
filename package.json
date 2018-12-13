@@ -1,0 +1,28 @@
+{
+    "name": "nuxt_test",
+    "version": "1.0.0",
+    "description": "小空头-文章展示h5",
+    "author": "894568474",
+    "private": true,
+    "scripts": {
+        "dev": "nuxt",
+        "test": "nuxt build",
+        "build": "cross-env PATH_TYPE=prod nuxt build",
+        "start": "nuxt start",
+        "generate": "nuxt generate"
+    },
+    "dependencies": {
+        "axios": "^0.18.0",
+        "cross-env": "^5.2.0",
+        "hzq-axios": "^1.0.6",
+        "hzq-tool": "^1.0.6",
+        "node-sass": "^4.10.0",
+        "nuxt": "^2.0.0",
+        "sass-loader": "^7.1.0",
+        "vue-content-loader": "^0.2.1",
+        "vue-photo-preview": "^1.1.1"
+    },
+    "devDependencies": {
+        "nodemon": "^1.11.0"
+    }
+}
