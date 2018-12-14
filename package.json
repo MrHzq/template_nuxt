@@ -13,16 +13,16 @@
     },
     "dependencies": {
         "axios": "^0.18.0",
-        "cross-env": "^5.2.0",
-        "hzq-axios": "^1.0.6",
-        "hzq-tool": "^1.0.6",
-        "node-sass": "^4.10.0",
+        "hzq-axios": "^1.0.8",
+        "hzq-tool": "^1.0.8",
         "nuxt": "^2.0.0",
-        "sass-loader": "^7.1.0",
         "vue-content-loader": "^0.2.1",
         "vue-photo-preview": "^1.1.1"
     },
     "devDependencies": {
-        "nodemon": "^1.11.0"
+        "cross-env": "^5.2.0",
+        "node-sass": "^4.11.0",
+        "nodemon": "^1.11.0",
+        "sass-loader": "^7.1.0"
     }
 }
