@@ -6,7 +6,6 @@ import apiUrl from '~/assets/apiUrl'
 Vue.use(hzqTool)
 Vue.use(hzqAxios, apiUrl, {
     baseURL: 'https://open-api.beone.app',
-    prodURL: 'https://api.dzqqsc.com',
     createConfig: {
         headers: { 'X-APPID': 'toBPJhUqos' }
     }
