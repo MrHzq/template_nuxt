@@ -1,6 +1,6 @@
 import Vue from 'vue'
-import hzqAxios from 'hzq-axios'
 import hzqTool from 'hzq-tool'
+import hzqAxios from 'hzq-axios'
 import apiUrl from '~/assets/apiUrl'
 
 Vue.use(hzqTool)
@@ -10,11 +10,7 @@ Vue.use(hzqAxios, apiUrl, {
         headers: { 'X-APPID': 'toBPJhUqos' }
     }
 })
-
+const arr = ['api', 'tool', 'copy', 'getItem', 'setItem']
 export default (c, inject) => {
-    inject('api', Vue.$api)
-    inject('tool', Vue.$tool)
-    inject('copy', Vue.prototype.$copy)
-    inject('getItem', Vue.prototype.$getItem)
-    inject('setItem', Vue.prototype.$setItem)
+    arr.map(val => inject(val, Vue.prototype['$' + val]))
 }
