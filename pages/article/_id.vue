@@ -1,13 +1,23 @@
+/*
+ * @Author: hzq
+ * @Date: 2018-12-19 15:58:36
+ * @Last Modified by: hzq
+ * @Last Modified time: 2018-12-19 15:58:36
+ * @文件说明:文章正文
+ */
 <template>
     <div class="article" :class="{ pcClass: isPC }">
         <!-- 标题 -->
         <div class="title">{{ articleInfo.title }}</div>
         <!-- 用户信息 -->
         <div class="userInfo">
-            <a class="left" :href="'xktapp://user/'+articleInfo.user_id">
+            <a class="left" :href="'xktapp://user/' + articleInfo.user_id">
                 <p class="userImg" :style="{
-                        backgroundImage: 'url('+articleInfo.avatar+'?imageView2/1/w/30/h/30)'
-                }"></p>
+                        backgroundImage:
+                            'url(' +
+                            articleInfo.avatar +
+                            '?imageView2/1/w/30/h/30)'
+                    }"></p>
                 <p class="name">{{ articleInfo.name }}</p>
             </a>
             <div class="right">
@@ -18,50 +28,61 @@
         <!-- 文章内容 -->
         <div class="content" v-html="articleInfo.content"></div>
         <!-- 文章打赏部分 -->
-        <div class="reward" v-if="awardData">
-            <div class="avatar" :style="{
-                    backgroundImage: 'url('+articleInfo.avatar+'?imageView2/1/w/50/h/50)'
-            }"></div>
-            <div class="like" @click="showPopup">喜欢作者</div>
+        <div class="reward" v-if="awardData" :style="{ paddingBottom: isWeb ? '142px' : '60px' }">
+            <a class="avatar" :href="'xktapp://user/' + articleInfo.user_id" :style="{
+                    backgroundImage:
+                        'url(' + articleInfo.avatar + '?imageView2/1/w/64/h/64)'
+                }"></a>
+            <div class="like" @click="showPopup">
+                <img src="https://static-image.dzqqsc.com/moneyIcon?imageView2/1/w/24/h/34" /> 喜欢作者
+            </div>
             <div class="likeNum" v-if="awardData.num">
                 <div class="line"></div>
                 <div class="num">{{ awardData.num }}人喜欢</div>
                 <div class="line"></div>
             </div>
             <div class="likeUser">
-                <a v-for="i in awardData.list" :key="i.user_id" :href="'xktapp://user/'+i.user_id" :style="{
-                        backgroundImage:'url('+i.avatar+'?imageView2/1/w/30/h/30)'
-                }"></a>
+                <a v-for="i in awardData.list" :key="i.user_id" :href="'xktapp://user/' + i.user_id" :style="{
+                        backgroundImage:
+                            'url(' + i.avatar + '?imageView2/1/w/30/h/30)'
+                    }"></a>
             </div>
         </div>
         <!-- 打赏金额弹窗 -->
         <transition name="fade">
             <div class="rewardPopup" v-if="popup" @click.self="closePopup">
                 <div class="popupContent">
+                    <a class="avatar" :href="'xktapp://user/' + articleInfo.user_id" :style="{
+                            backgroundImage:
+                                'url(' +
+                                articleInfo.avatar +
+                                '?imageView2/1/w/64/h/64)'
+                        }"></a>
                     <div class="popTitle">喜欢作者</div>
                     <div class="popMoney">
-                        <div v-for="(i, index) in money" :key="i" :class="{ choose: index === price }" @click="price = index"> {{ i }} </div>
+                        <div v-for="(i, index) in money" :key="i" :class="{ choose: index === price }" @click="price = index">
+                            {{ i }} BBC
+                        </div>
                     </div>
-                    <div class="popBtn" @click="rewardFun">确认打赏</div>
+                    <div class="popBtn" :style="{ opacity: loading ? '0.8' : '1' }" @click="rewardFun">
+                        <i class="iconfont icon-jiazai" v-show="loading"></i>
+                        确认打赏
+                    </div>
                     <i class="iconfont icon-guanbi" @click="closePopup"></i>
                 </div>
             </div>
         </transition>
         <!-- toast文字提示 -->
         <transition name="fade">
-            <div class="toast" v-if="toast">{{toast}}</div>
+            <div class="toast" v-if="toast">{{ toast }}</div>
         </transition>
         <!-- 底部 banner -->
-        <a class="footer" :class="{ iphoneX: !isPC && isX }" v-if="isWeb" href="https://www.xkt.one">
+        <a class="footer" :class="{ iphoneX: isX }" v-if="isWeb" href="https://www.xkt.one">
             <div class="footer_content">
-                <img class="logo" src="https://static-image.dzqqsc.com/footer_logo.png?imageView2/1/w/72/h/72" alt="logo" />
-                <div class="text">
-                    <span>小空头</span>
-                    <span class="line"></span>
-                    <span>专业的数字资产交易社区</span>
-                </div>
-                <div class="join">立即加入</div>
+                <img class="logo" src="https://static-image.dzqqsc.com/footer_logo?imageView2/1/w/186/h/32" alt="logo" />
+                <div class="text">专业的数字资产交易社区</div>
             </div>
+            <div class="footer_join">立即加入</div>
         </a>
     </div>
 </template>
@@ -122,7 +143,9 @@
                 // token
                 token: '',
                 // toast文字提示
-                toast: ''
+                toast: '',
+                // 是否按钮加载效果
+                loading: false
             }
         },
         methods: {
@@ -139,6 +162,7 @@
                     this.popup = true
                 } else this.toastFun('未登录')
             },
+            // 禁止滚动
             stopTouch(e) {
                 e.preventDefault()
             },
@@ -151,12 +175,14 @@
                     capture: true
                 })
             },
-            // 打赏
+            // 打赏弹窗-点击打赏按钮
             rewardFun() {
                 if (this.price === -1) {
                     this.toastFun('请选择打赏金额~')
                     return
                 }
+                if (this.loading) return
+                else this.loading = true
                 let { article_id } = this.articleInfo
                 this.$api
                     .tipViewpointInfo(
@@ -167,26 +193,30 @@
                         },
                         { 'X-TOKEN': this.token }
                     )
-                    .then(res => {
-                        if (res.code === 0) {
+                    .then(({ code }) => {
+                        if (code === 0) {
+                            this.$api
+                                .articleAwardList({ article_id })
+                                .then(res => {
+                                    if (res.code === 0) {
+                                        this.awardData = res.data
+                                        this.closePopup()
+                                        this.toastFun('谢谢你的打赏~')
+                                    } else this.toastFun()
+                                })
+                                .catch(e => this.toastFun())
+                        } else if (code === 99999) {
                             this.closePopup()
-                            this.$api.articleAwardList({ article_id }).then(res => {
-                                if (res.code === 0) {
-                                    this.awardData = res.data
-                                    this.toastFun('谢谢你的打赏~')
-                                }
-                            })
-                        } else if (res.code === 99999) {
-                            this.closePopup()
-                            this.toastFun(res.msg)
-                        } else if (res.code === 90040) {
+                            this.toastFun('未登录')
+                        } else if (code === 90040) {
                             this.toastFun('余额不足')
-                        }
+                        } else this.toastFun()
                     })
-                    .catch(e => this.toastFun('网络错误，请稍后重试'))
+                    .catch(e => this.toastFun())
             },
             // toast文字提示
-            toastFun(toast) {
+            toastFun(toast = '网络错误，请稍后重试') {
+                this.loading = false
                 if (this.toast === toast) return
                 this.toast = toast
                 setTimeout(() => (this.toast = ''), 1500)
@@ -205,31 +235,35 @@
                     ua.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/) &&
                     screen.height >= 812
             } else isPC = true
-            // 获取打赏信息
-            const _res = await c.app.$api.articleAwardList({
-                article_id: c.params.id
-            })
+            let { id: article_id } = c.params
             // 获取文章信息
-            const { data } = await c.app.$api.getArticleContent({
+            let { data } = await c.app.$api.getArticleContent({
                 a: 'h5',
-                article_id: c.params.id
+                article_id
             })
             data.created_time = c.app.$tool.formatDate(
                 data.created_time * 1000,
                 'YYYY.MM.DD HH:mm'
             )
-            data.content = data.content.replace(/”/g, '" ')
-            data.content = data.content.replace(/“/g, ' "')
-            data.content = data.content.replace(/<br>/g, '')
+            let { content: ctn } = data
+            ctn = ctn
+                .replace(/”/g, '" ')
+                .replace(/“/g, ' "')
+                .replace(/<br>/g, '')
             if (!isPC) {
-                data.content = data.content.replace(/<img/g, '<img preview="1"')
+                ctn = ctn.replace(/<img/g, '<img preview="1"')
             }
-            let token = c.query.token || ''
+            data.content = ctn
+            let { token = '' } = c.query
+            // 获取打赏信息
+            let { data: awardData } = await c.app.$api.articleAwardList({
+                article_id
+            })
             return {
                 isX,
                 isPC,
+                awardData,
                 articleInfo: data,
-                awardData: _res.data,
                 isWeb: ua.substring(0, 2) !== 'X-',
                 token: token.trim().replace(/\s/g, '+')
             }
@@ -264,12 +298,13 @@
         a:active {
             color: #fff;
             text-decoration: none;
+            cursor: default;
         }
         .title {
             padding-top: 24px;
+            color: #333;
             font-size: 24px;
             font-weight: bold;
-            color: #333333;
             margin-bottom: 16px;
         }
         .userInfo {
@@ -293,6 +328,7 @@
             }
             .right {
                 color: #9b9b9b;
+                align-items: baseline;
             }
             .watch {
                 margin-left: 11px;
@@ -330,12 +366,12 @@
             }
             ol,
             ul {
-                margin: 16px 0;
-                margin-left: 20px;
+                margin: 16px 0 16px 20px;
                 line-height: 34px;
             }
             a {
                 color: #1fa1f4;
+                cursor: pointer !important;
             }
             .only-video {
                 position: relative;
@@ -360,51 +396,66 @@
         }
         .reward {
             @include flex($direction: column);
-            padding: 80px 0 120px;
+            padding: 40px 0;
             .avatar {
-                width: 50px;
-                height: 50px;
+                width: 64px;
+                height: 64px;
                 border-radius: 50%;
                 background-size: cover;
                 background-position: center;
             }
             .like {
-                width: 150px;
-                height: 40px;
-                line-height: 40px;
+                @include flex();
+                width: 108px;
+                height: 36px;
                 margin: 20px 0;
                 color: #fff;
                 font-size: 14px;
-                text-align: center;
-                border-radius: 40px;
-                background-color: #1fa1f4;
+                border-radius: 36px;
                 cursor: pointer;
+                background: linear-gradient(
+                    135deg,
+                    rgba(9, 151, 232, 1) 0%,
+                    rgba(19, 116, 201, 1) 31%,
+                    rgba(25, 74, 169, 1) 100%
+                );
+                img {
+                    width: 12px;
+                    margin-right: 9px;
+                }
             }
             .likeNum {
                 @include flex();
-                width: 250px;
-                margin-bottom: 15px;
-                color: #aaa;
+                width: 260px;
+                margin-bottom: 10px;
+                font-size: 14px;
+                color: rgba(0, 0, 0, 0.25);
                 .line {
                     flex: 1;
                     height: 1px;
-                    background-color: #aaa;
+                    background-color: rgba(0, 0, 0, 0.25);
                 }
                 .num {
-                    padding: 0 20px;
+                    padding: 0 12px;
                 }
             }
             .likeUser {
                 @include flex();
-                width: 60%;
+                flex-wrap: wrap;
+                width: 234px;
+                max-height: 120px;
+                overflow: hidden;
                 a {
                     width: 30px;
                     height: 30px;
                     margin-bottom: 10px;
-                    margin-right: 10px;
+                    margin-right: 4px;
                     border-radius: 50%;
                     background-size: cover;
                     background-position: center;
+                    &:nth-child(7n) {
+                        margin-right: 0;
+                    }
                 }
             }
         }
@@ -415,70 +466,93 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            font-size: 16px;
+            background-color: rgba(0, 0, 0, 0.45);
             .popupContent {
-                position: relative;
                 @include flex($direction: column);
-                width: 70%;
-                padding: 20px 15px;
-                text-align: center;
+                position: relative;
+                width: 327px;
+                padding-top: 48px;
                 border-radius: 10px;
                 background-color: #fff;
+                .avatar {
+                    position: absolute;
+                    top: -33px;
+                    width: 64px;
+                    height: 64px;
+                    border-radius: 50%;
+                    border: 2px solid #fff;
+                }
                 .popTitle {
                     position: relative;
-                    margin-bottom: 15px;
+                    font-weight: bold;
+                    margin-bottom: 30px;
                     &::after {
                         content: '';
                         position: absolute;
-                        bottom: -15px;
-                        left: 25%;
-                        width: 50%;
+                        bottom: -10px;
+                        left: 50%;
+                        width: 42px;
                         height: 2px;
-                        background-color: #1fa1f4;
+                        margin-left: -22px;
+                        border-radius: 2px;
+                        border: 1px solid #1a39b8;
+                        background-color: #1a39b8;
                     }
                 }
                 .popMoney {
                     @include flex($justify: flex-start);
                     flex-wrap: wrap;
                     width: 100%;
-                    margin: 40px 0;
+                    padding: 0 26px 40px;
+                    box-sizing: border-box;
                     div {
-                        width: 30%;
-                        height: 45px;
-                        margin-right: 5%;
-                        margin-bottom: 5%;
+                        width: 76px;
+                        height: 44px;
+                        line-height: 44px;
+                        margin-right: 20px;
+                        font-size: 14px;
                         text-align: center;
-                        line-height: 45px;
-                        color: #aaa;
-                        border: 1px solid #aaa;
-                        box-sizing: border-box;
+                        color: rgba(0, 0, 0, 0.25);
                         border-radius: 5px;
-                        &:nth-child(n) {
-                            margin-bottom: 0;
-                        }
+                        border: 1px solid rgba(0, 0, 0, 0.25);
+                        transition: all 0.1s;
                         &:nth-child(3n) {
                             margin-right: 0;
                         }
                     }
                     .choose {
-                        color: #1fa1f4;
-                        border-color: #1fa1f4;
+                        color: #1a39b8;
+                        border-color: #1a39b8;
                     }
                 }
                 .popBtn {
-                    width: 80%;
-                    height: 40px;
-                    line-height: 40px;
+                    width: 100%;
+                    height: 50px;
+                    line-height: 50px;
                     color: #fff;
-                    font-size: 14px;
                     text-align: center;
-                    border-radius: 10px;
-                    background-color: #1fa1f4;
+                    border-radius: 0px 0px 10px 10px;
+                    background-color: #1a39b8;
+                    @keyframes rotating {
+                        from {
+                            transform: rotate(0);
+                        }
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
+                    .icon-jiazai {
+                        display: inline-block;
+                        animation: rotating 2s linear infinite;
+                    }
                 }
                 .icon-guanbi {
                     position: absolute;
-                    top: 22px;
-                    right: 15px;
+                    top: 0;
+                    right: 0;
+                    font-size: 12px;
+                    padding: 18px;
                 }
             }
         }
@@ -501,58 +575,46 @@
         }
         .fade-enter-active,
         .fade-leave-active {
-            transition: opacity 0.5s;
+            transition: opacity 0.3s;
         }
         .fade-enter,
         .fade-leave-to {
             opacity: 0;
         }
         .footer {
+            @include flex($justify: space-between);
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 60px;
-            background-image: url('https://static-image.dzqqsc.com/footer_bg.png');
+            height: 82px;
+            font-size: 14px;
+            background-image: url('https://static-image.dzqqsc.com/footer_bg');
             background-size: cover;
             background-position: center;
-            font-size: 14px;
             .footer_content {
-                @include flex($justify: space-between);
-                height: 60px;
-                margin: 0 16px;
+                margin-left: 18px;
+                color: #fff;
+                font-weight: bold;
                 .logo {
-                    height: 36px;
+                    height: 16px;
                 }
-                .text {
-                    @include flex();
-                    color: #fff;
-                    font-weight: bold;
-                    font-size: 0;
-                    span {
-                        font-size: 14px;
-                    }
-                    .line {
-                        width: 1px;
-                        height: 11px;
-                        margin: 0 3px;
-                        background-color: #fff;
-                    }
-                }
-                .join {
-                    width: 25.1%;
-                    max-width: 150px;
-                    height: 31px;
-                    line-height: 31px;
-                    text-align: center;
-                    color: #1fa1f4;
-                    background-color: #fff;
-                    border-radius: 31px;
-                }
+            }
+            .footer_join {
+                width: 25.1%;
+                max-width: 150px;
+                // height: 31px;
+                line-height: 31px;
+                margin-right: 18px;
+                text-align: center;
+                color: #1a39b8;
+                background-color: #fff;
+                border-radius: 3px;
+                cursor: pointer;
             }
         }
         .iphoneX {
-            padding-bottom: 21px;
+            padding-bottom: 11px;
         }
     }
     .pcClass {
@@ -582,21 +644,10 @@
             min-width: 760px;
             max-width: 1200px;
             margin: 0 auto;
-            .footer_content {
-                .text {
-                    span {
-                        font-size: 16px;
-                    }
-                    .line {
-                        width: 2px;
-                        height: 16px;
-                    }
-                }
-                .join {
-                    height: 40px;
-                    line-height: 40px;
-                    font-size: 16px;
-                }
+            font-size: 16px;
+            .footer_join {
+                // height: 40px;
+                line-height: 40px;
             }
         }
     }

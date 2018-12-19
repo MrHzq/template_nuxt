@@ -14,7 +14,7 @@ Vue.use(hzqAxios, apiUrl, {
 export default (c, inject) => {
     inject('api', Vue.$api)
     inject('tool', Vue.$tool)
+    inject('copy', Vue.prototype.$copy)
     inject('getItem', Vue.prototype.$getItem)
     inject('setItem', Vue.prototype.$setItem)
-    inject('copy', Vue.prototype.$copy)
 }
